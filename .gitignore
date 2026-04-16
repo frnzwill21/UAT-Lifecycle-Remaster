@@ -1,0 +1,42 @@
+*venv*
+venv_test
+__pycache__
+test.py
+config.json
+PLAN.md
+PLAN_PAST.md
+old_configs.json
+config/*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist_ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Ignore everything under notifications
+assets/notifications/*
+
+# But keep these specific sound effects
+!assets/notifications/harikitte_ikou.mp3
+!assets/notifications/sfx_01.mp3
+!assets/notifications/sfx_02.mp3
+!assets/notifications/sfx_03.mp3
