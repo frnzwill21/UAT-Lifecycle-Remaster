@@ -145,6 +145,10 @@ def career_lobby(dry_run_turn=False):
             continue
           else:
             info("Auto-restart mencapai batas maksimal (3x). Bot berhenti.")
+            info("Mematikan UmamusumePrettyDerby.exe...")
+            os.system("taskkill /F /IM UmamusumePrettyDerby.exe")
+            info("Mematikan laptop dalam 60 detik...")
+            os.system("shutdown /s /t 60")
             device_action.stop_bot(StopReason.STUCK, f"assets/notifications/{config.ERROR_NOTIFICATION}", volume = config.NOTIFICATION_VOLUME)
       if constants.SCENARIO_NAME == "":
         info("Trying to find what scenario we're on.")
