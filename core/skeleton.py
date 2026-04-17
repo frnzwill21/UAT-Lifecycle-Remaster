@@ -92,6 +92,7 @@ def career_lobby(dry_run_turn=False):
   global last_state, action_count, non_match_count
   non_match_count = 0
   action_count=0
+  stuck_restarts = 0
   sleep(1)
   bot.PREFERRED_POSITION_SET = False
   constants.SCENARIO_NAME = ""
@@ -133,7 +134,18 @@ def career_lobby(dry_run_turn=False):
           # Actually, if we hit this, lifecycle didn't catch it for some reason. We fallback to stop.
           device_action.stop_bot(StopReason.FINISHED, f"assets/notifications/{config.SUCCESS_NOTIFICATION}", volume = config.NOTIFICATION_VOLUME)
         else:
-          device_action.stop_bot(StopReason.STUCK, f"assets/notifications/{config.ERROR_NOTIFICATION}", volume = config.NOTIFICATION_VOLUME)
+          stuck_restarts += 1
+          if stuck_restarts <= 3:
+            info(f"Bot stuck! Sedang mencoba auto-restart (Percobaan {stuck_restarts}/3).")
+            non_match_count = 0
+            # Klik tengah layar sebagai fallback
+            gw_x, gw_y, gw_w, gw_h = constants.GAME_WINDOW_REGION
+            device_action.click(target=(gw_x + gw_w // 2, gw_y + gw_h // 2), text="Auto restart fallback click")
+            sleep(3)
+            continue
+          else:
+            info("Auto-restart mencapai batas maksimal (3x). Bot berhenti.")
+            device_action.stop_bot(StopReason.STUCK, f"assets/notifications/{config.ERROR_NOTIFICATION}", volume = config.NOTIFICATION_VOLUME)
       if constants.SCENARIO_NAME == "":
         info("Trying to find what scenario we're on.")
         if device_action.locate_and_click("assets/unity/unity_cup_btn.png", min_search_time=get_secs(1)):
