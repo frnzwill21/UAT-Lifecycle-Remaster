@@ -200,7 +200,7 @@ def career_prep():
         device_action.locate_and_click("assets/buttons/restore_btn.png")
         sleep(1)
         
-        device_action.locate_and_click("assets/buttons/use_btn.png", region_ltrb=constants.SCREEN_TOP_BBOX) # Adjusted region
+        device_action.click(target=(764, 271))
         sleep(0.5)
         
         # Max out TP usage? User code clicked plus_btn twice.
