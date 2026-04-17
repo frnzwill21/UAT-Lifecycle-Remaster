@@ -17,7 +17,8 @@ def handle_career_completion():
             return 
 
         # Exit Condition: Deteksi tombol Auto Career (berarti sudah berada di Lobby kembali)
-        if device_action.locate("assets/buttons/auto_career_btn.png", confidence=0.8, min_search_time=get_secs(0.5)):
+        if device_action.locate("assets/buttons/auto_career_btn.png", confidence=0.8, min_search_time=get_secs(0.5)) or \
+           device_action.locate("assets/buttons/auto_career_btn2.png", confidence=0.8, min_search_time=get_secs(0.5)):
             info("Terdeteksi Game Lobby (auto_career_btn). Prosedur penyelesaian Career tuntas!")
             return True
 
@@ -97,6 +98,10 @@ def auto_start_career():
     if device_action.locate("assets/buttons/auto_career_btn.png", confidence=0.8, min_search_time=get_secs(1)):
         info("Tombol Auto Career ditemukan. Memulai sesi baru.")
         device_action.locate_and_click("assets/buttons/auto_career_btn.png")
+        sleep(5)
+    elif device_action.locate("assets/buttons/auto_career_btn2.png", confidence=0.8, min_search_time=get_secs(1)):
+        info("Tombol Auto Career 2 ditemukan. Memulai sesi baru.")
+        device_action.locate_and_click("assets/buttons/auto_career_btn2.png")
         sleep(5)
     elif device_action.locate("assets/buttons/career_resume.png", min_search_time=get_secs(1)):
          info("Tombol Resume Career ditemukan.")
@@ -321,6 +326,7 @@ def process_title_screen():
              
         # Check if we are in Game Lobby
         if device_action.locate("assets/buttons/auto_career_btn.png", confidence=0.8, min_search_time=0.5) or \
+           device_action.locate("assets/buttons/auto_career_btn2.png", confidence=0.8, min_search_time=0.5) or \
            device_action.locate("assets/buttons/career_resume.png", confidence=0.8, min_search_time=0.5) or \
            device_action.locate("assets/buttons/resume_btn.png", confidence=0.8, min_search_time=0.5):
              info("Game Lobby detected.")
@@ -365,7 +371,8 @@ def process_game_lobby():
          return
 
     # Check for Auto Career
-    if device_action.locate("assets/buttons/auto_career_btn.png", min_search_time=get_secs(2)):
+    if device_action.locate("assets/buttons/auto_career_btn.png", min_search_time=get_secs(2)) or \
+       device_action.locate("assets/buttons/auto_career_btn2.png", min_search_time=get_secs(2)):
          info("Auto Career found. Starting Auto Start Career lifecycle...")
          auto_start_career()
          return
@@ -376,6 +383,7 @@ def check_game_lobby():
     Returns True if detected, False otherwise.
     """
     if device_action.locate("assets/buttons/auto_career_btn.png", confidence=0.8, min_search_time=0) or \
+       device_action.locate("assets/buttons/auto_career_btn2.png", confidence=0.8, min_search_time=0) or \
        device_action.locate("assets/buttons/career_resume.png", confidence=0.8, min_search_time=0):
         info("Game Lobby terdeteksi secara proaktif!")
         return True
@@ -420,6 +428,7 @@ def handle_date_changed():
              
          # Check if we reached Lobby
          if device_action.locate("assets/buttons/auto_career_btn.png", confidence=0.8, min_search_time=0.5) or \
+            device_action.locate("assets/buttons/auto_career_btn2.png", confidence=0.8, min_search_time=0.5) or \
             device_action.locate("assets/buttons/career_resume.png", confidence=0.8, min_search_time=0.5):
              info("Game Lobby detected after Date Changed.")
              process_game_lobby()
