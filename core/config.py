@@ -48,6 +48,7 @@ def reload_config():
     load_var('CANCEL_CONSECUTIVE_RACE', config["cancel_consecutive_race"])
     load_var('STAT_CAPS', config["stat_caps"])
     load_var('IS_AUTO_BUY_SKILL', config["skill"]["is_auto_buy_skill"])
+    load_var('BUY_SKILL_END_CAREER', config["skill"].get("buy_skill_end_career", True))
     load_var('SKILL_CHECK_TURNS', config["skill"]["skill_check_turns"])
     load_var('CHECK_SKILL_BEFORE_RACES', config["skill"]["check_skill_before_races"])
     load_var('SKILL_PTS_CHECK', config["skill"]["skill_pts_check"])

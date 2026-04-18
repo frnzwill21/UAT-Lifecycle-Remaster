@@ -23,7 +23,7 @@ def handle_career_completion():
             return True
 
         # 0. Check and Buy Skills before Complete Career (if button exists)
-        if not has_bought_skills and device_action.locate("assets/buttons/skills2_btn.png", confidence=0.8, min_search_time=0):
+        if not has_bought_skills and hasattr(config, 'BUY_SKILL_END_CAREER') and config.BUY_SKILL_END_CAREER and device_action.locate("assets/buttons/skills2_btn.png", confidence=0.8, min_search_time=0):
             info("Found skills button on career completion end screen. Buying skills first...")
             from core.skill import buy_skill_end_career
             buy_skill_end_career()
