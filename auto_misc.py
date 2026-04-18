@@ -300,20 +300,21 @@ while True:
     opponent_matches = device_action.deduplicate_boxes(tt_matches.get("tt_select_opponent") + tt_matches.get("tt_select_opponent_2"), min_dist=10)
     opponent_matches.sort(key=lambda x: x[1])
     info(f"Matched buttons: {opponent_matches}")
-    if len(opponent_matches) == 3:
-      # Map difficulty to button index (hard=0, medium=1, easy=2)
-      difficulty_indices = {"hard": 0, "medium": 1, "easy": 2}
-
-      if args.tt in difficulty_indices:
-        target_index = difficulty_indices[args.tt]
-        # Check if we have enough buttons for the selected difficulty
-        info(f"Selecting opponent button {target_index} (for {args.tt} difficulty)")
-        click_match_array = []
-        click_match_array.append(opponent_matches[target_index])
-        debug(f"click_match_array: {click_match_array}")
-        click_match(click_match_array, "opponent_btn")
+    if len(opponent_matches) > 0:
+      if args.tt == "hard":
+        target_index = 0
+      elif args.tt == "easy":
+        target_index = -1
+      elif args.tt == "medium":
+        target_index = len(opponent_matches) // 2
       else:
         info(f"Invalid difficulty level: {args.tt}.")
+        continue
+
+      info(f"Selecting opponent button index {target_index} (for {args.tt} difficulty)")
+      click_match_array = [opponent_matches[target_index]]
+      debug(f"click_match_array: {click_match_array}")
+      click_match(click_match_array, "opponent_btn")
       continue
 
   if args.lr:

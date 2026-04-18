@@ -189,9 +189,27 @@ def update_webhook(data: dict):
   config.WEBHOOK_PROGRESS_ENABLED = data.get("webhook_progress_enabled", True)
   return {"status": "success"}
 
+@app.post("/config")
+def save_and_reload_config(new_config: dict):
+  """Save merged config to config.json and reload the bot config."""
+  try:
+    save_config(new_config)
+    config.reload_config()
+    bot.use_adb = config.USE_ADB
+    bot.device_id = config.DEVICE_ID if config.DEVICE_ID else None
+    return {"status": "success"}
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/config/applied-preset")
 def get_applied_preset():
   return {"preset_id": load_applied_preset_id()}
+
+@app.post("/config/applied-preset")
+def set_applied_preset(data: dict):
+  preset_id = data.get("preset_id", "")
+  save_applied_preset_id(preset_id)
+  return {"status": "success", "preset_id": preset_id}
 
 @app.get("/configs")
 @app.get("/configs/")
