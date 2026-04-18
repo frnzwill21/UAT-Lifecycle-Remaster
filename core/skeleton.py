@@ -131,7 +131,6 @@ def career_lobby(dry_run_turn=False):
         info("Career lobby stuck, quitting.")
         complete_career_btn = device_action.locate("assets/buttons/complete_career_btn.png", min_search_time=get_secs(2))
         if complete_career_btn is not None:
-          # Actually, if we hit this, lifecycle didn't catch it for some reason. We fallback to stop.
           device_action.stop_bot(StopReason.FINISHED, f"assets/notifications/{config.SUCCESS_NOTIFICATION}", volume = config.NOTIFICATION_VOLUME)
         else:
           stuck_restarts += 1
@@ -371,7 +370,12 @@ def career_lobby(dry_run_turn=False):
         info("State is invalid, retrying...")
         debug(f"State: {state_obj}")
       elif action.func == "skip_turn":
-        info("Skipping turn, retrying...")
+        warning("##############################################################################")
+        warning("No more actions remaining in available_actions. Skipping turn by training wit.")
+        warning("##############################################################################")
+        action.run()
+        record_and_finalize_turn(state_obj, action)
+        continue
       else:
         debug(f"Taking action: {action.func}")
 
@@ -380,13 +384,18 @@ def career_lobby(dry_run_turn=False):
           buy_skill(state_obj, action_count, race_check=True)
         if dry_run_turn:
           info("Dry run turn, quitting.")
+          record_and_finalize_turn(state_obj, action)
           device_action.stop_bot(StopReason.FINISHED, f"assets/notifications/{config.SUCCESS_NOTIFICATION}", volume = config.NOTIFICATION_VOLUME)
         elif not action.run():
           if action.available_actions:  # Check if the list is not empty
             action.available_actions.pop(0)
           else:
-            warning("No more actions remaining in available_actions. Retrying turn to fix.")
-            non_match_count += 1
+            warning("##############################################################################")
+            warning("No more actions remaining in available_actions. Skipping turn by training wit.")
+            warning("##############################################################################")
+            action.func="skip_turn"
+            action.run()
+            record_and_finalize_turn(state_obj, action)
             continue
 
           if action.options.get("race_mission_available") and action.func == "do_race":
@@ -406,6 +415,11 @@ def career_lobby(dry_run_turn=False):
               break
             debug(f"Action {function_name} failed, trying other actions.")
 
+          warning("##############################################################################")
+          warning("No more actions remaining in available_actions. Skipping turn by training wit.")
+          warning("##############################################################################")
+          action.func="skip_turn"
+          action.run()
         record_and_finalize_turn(state_obj, action)
         continue
 

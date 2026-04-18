@@ -133,7 +133,6 @@ def buy_skill_end_career():
         info(f"Reached end of skill screen. Returning.")
         device_action.locate_and_click("assets/buttons/back_btn.png", min_search_time=get_secs(3), region_ltrb=constants.SCREEN_BOTTOM_BBOX)
         return
-
 def is_skill_match(text: str, skill_list: list[str], threshold: float = 0.9) -> bool:
   for skill in skill_list:
     similarity = Levenshtein.ratio(text.lower(), skill.lower())

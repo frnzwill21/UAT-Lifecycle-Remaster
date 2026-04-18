@@ -25,8 +25,8 @@ import TrainingSection from "./components/training/TrainingSection";
 import EnergySection from "./components/training/EnergySection";
 import MoodSection from "./components/training/MoodSection";
 import TimelineSection from "./components/skeleton/TimelineSection";
+import FunctionModsSection from "./components/function-mods/FunctionModsSection";
 import Tooltips from "@/components/_c/Tooltips";
-import { SETUP_KEYS, type SetupConfig } from "./constants/setupKeys";
 
 interface Theme {
   id: string;
@@ -35,6 +35,23 @@ interface Theme {
   secondary: string;
   dark: boolean;
 }
+
+const SETUP_KEYS = [
+  "sleep_time_multiplier",
+  "use_adb",
+  "window_name",
+  "device_id",
+  "ocr_use_gpu",
+  "notifications_enabled",
+  "info_notification",
+  "error_notification",
+  "success_notification",
+  "notification_volume",
+  "preset_id"
+] as const;
+
+type SetupKey = (typeof SETUP_KEYS)[number];
+type SetupConfig = Pick<Config, SetupKey>;
 
 const pickSetupConfig = (config: Config): SetupConfig => ({
   sleep_time_multiplier: config.sleep_time_multiplier,
@@ -47,6 +64,7 @@ const pickSetupConfig = (config: Config): SetupConfig => ({
   error_notification: config.error_notification,
   success_notification: config.success_notification,
   notification_volume: config.notification_volume,
+  preset_id: config.preset_id,
 });
 
 const stripSetupConfig = (config: Config): Config => {
@@ -109,7 +127,6 @@ function App() {
     }
     return false;
   });
-
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add("dark");
@@ -119,8 +136,6 @@ function App() {
       localStorage.theme = "light";
     }
   }, [isDark]);
-
-
 
   useEffect(() => {
     fetch("/version.txt", { cache: "no-store" })
@@ -141,16 +156,16 @@ function App() {
     activeConfig,
     activeConfigId,
     presets,
-    setActiveConfig,
+    setActiveIndex,
     savePresetById,
     savePreset,
     createPreset,
     duplicatePreset,
     deletePreset,
     appliedPresetId,
-    applyPreset,
+    setAppliedPresetId,
   } = useConfigPreset();
-  const { config, setConfig, toast } = useConfig(activeConfig ?? defaultConfig);
+  const { config, setConfig, saveConfig, toast } = useConfig(activeConfig?.config ?? defaultConfig);
   const { fileInputRef, openFileDialog, handleImport } = useImportConfig({
     activeConfig: config,
     createPreset,
@@ -173,24 +188,24 @@ function App() {
 
   useEffect(() => {
     if (presets[activeIndex]) {
-      setConfig(mergeConfigWithSetup(presets[activeIndex].config ?? defaultConfig, setupConfig));
+      setConfig(mergeConfigWithSetup(activeConfig?.config ?? defaultConfig, setupConfig));
     } else {
       setConfig(mergeConfigWithSetup(defaultConfig, setupConfig));
     }
   }, [activeIndex, defaultConfig, presets, setConfig, setupConfig]);
 
   const baselineConfig = useMemo(
-    () => mergeConfigWithSetup(presets[activeIndex]?.config ?? defaultConfig, setupConfig),
+    () => mergeConfigWithSetup(activeConfig?.config ?? defaultConfig, setupConfig),
     [activeIndex, defaultConfig, presets, setupConfig]
   );
   const isDirty = useMemo(
     () => JSON.stringify(config) !== JSON.stringify(baselineConfig),
     [baselineConfig, config]
   );
-  const appliedPresetName = useMemo(() => {
+/*  const appliedPresetName = useMemo(() => {
     if (!appliedPresetId) return "None";
     return presets.find((preset) => preset.id === appliedPresetId)?.name ?? appliedPresetId;
-  }, [appliedPresetId, presets]);
+  }, [appliedPresetId, presets]);*/
 
   const effectiveThemeId = config.theme || (themes.length > 0 ? themes[0].id : "");
   useEffect(() => {
@@ -206,7 +221,7 @@ function App() {
 
   const exportCurrentConfig = useCallback(() => {
     const fileNameBase = sanitizeFileName(config.config_name || activeConfigId || "config");
-    const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(stripSetupConfig(config), null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
@@ -218,10 +233,11 @@ function App() {
   }, [config, activeConfigId]);
 
   const switchToPresetById = useCallback((presetId: string) => {
-    if (!presets.some((preset) => preset.id === presetId)) return;
-    setActiveConfig(presetId);
+    const idx = presets.findIndex((preset) => preset.id === presetId);
+    if (idx < 0) return;
+    setActiveIndex(idx);
     setIsEditing(false);
-  }, [presets, setActiveConfig]);
+  }, [presets, setActiveIndex]);
 
   const requestPresetSwitch = useCallback((presetId: string) => {
     if (presetId === activeConfigId) return;
@@ -234,8 +250,10 @@ function App() {
   }, [activeConfigId, isDirty, switchToPresetById]);
 
   const persistPresetAndSetup = useCallback(async (): Promise<Config> => {
+    config.preset_id = activeConfigId
     const nextSetup = pickSetupConfig(config);
     const configWithoutSetup = stripSetupConfig(config);
+
     const mergedConfig = mergeConfigWithSetup(configWithoutSetup, nextSetup);
     await savePreset(configWithoutSetup);
     const setupRes = await fetch("/config/setup", {
@@ -261,15 +279,16 @@ function App() {
 
   const handleApplyPreset = useCallback(async () => {
     try {
+      const mergedConfig = await persistPresetAndSetup();
+      await saveConfig(mergedConfig);
       if (activeConfigId) {
-        await persistPresetAndSetup();
-        await applyPreset(activeConfigId);
+        await setAppliedPresetId(activeConfigId);
       }
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to apply preset:", error);
     }
-  }, [activeConfigId, applyPreset, persistPresetAndSetup]);
+  }, [activeConfigId, persistPresetAndSetup, saveConfig, setAppliedPresetId]);
 
   useEffect(() => {
     if (!isPresetActionsOpen) return;
@@ -295,6 +314,9 @@ function App() {
   }, [themes, effectiveThemeId, config.theme, updateConfig]);
 
 
+  if (!config?.event?.event_choices) {
+    return <div>Loading...</div>; // or loading UI
+  };
   const renderContent = () => {
     const props = { config, updateConfig };
     switch (activeTab) {
@@ -305,6 +327,7 @@ function App() {
       case "schedule": return <RaceListSection {...props} />;
       case "events": return <EventListSection {...props} />;
       case "timeline": return <TimelineSection {...props} />;
+      case "function-mods": return <><FunctionModsSection {...props} /></>;
       default: return <SetUpSection {...props} />;
     }
   };
@@ -321,7 +344,7 @@ function App() {
       />
 
       <div className="flex-1 flex flex-col overflow-y-auto">
-        <header className="p-6 w-full py-4 self-start border-b border-border flex items-end justify-between sticky top-0 z-10 backdrop-blur-md">
+        <header className="p-6 w-full py-4 self-start border-b border-border flex items-end justify-between sticky top-0 z-100 backdrop-blur-md">
 
           {/* Toast Notification Layer */}
           {isDirty && (
@@ -392,7 +415,7 @@ function App() {
                       <ChevronDown size={14} className={isPresetActionsOpen ? "rotate-180 transition-transform" : "transition-transform"} />
                     </Button>
                     {isPresetActionsOpen && (
-                      <div className="absolute translate-y-1 w-64 rounded-lg border border-border bg-popover text-foreground shadow-2xl p-2 z-50">
+                      <div className="absolute translate-y-1 w-64 rounded-lg border border-border bg-popover text-foreground shadow-2xl p-2 z-100">
                         <div className="px-2 pt-1 pb-2">
                           <p className="text-sm font-medium">Manage Preset Files</p>
                           <p className="text-xs text-muted-foreground">Create, duplicate, delete, import, or export presets.</p>
