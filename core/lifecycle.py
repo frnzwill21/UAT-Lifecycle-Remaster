@@ -33,27 +33,27 @@ def handle_career_completion():
 
         # 1. Check Complete Career (Header)
         if device_action.locate_and_click("assets/complete_career.png", confidence=0.8, min_search_time=get_secs(1)):
-            sleep(1)
+            sleep(0.5)
             continue
         
         # 2. Check Finish Button
         if device_action.locate_and_click("assets/buttons/finish_btn.png", confidence=0.8, min_search_time=get_secs(1)):
-            sleep(1)
+            sleep(0.5)
             continue
         
         # 3. Check Next Button
         if device_action.locate_and_click("assets/buttons/next_btn.png", confidence=0.8, min_search_time=get_secs(1)):
-            sleep(1)
+            sleep(0.5)
             continue
         
         # 4. Check Next 2 Button
         if device_action.locate_and_click("assets/buttons/next2_btn.png", confidence=0.8, min_search_time=get_secs(1)):
-            sleep(1)
+            sleep(0.5)
             continue
 
         # 5. Check Close Button
         if device_action.locate_and_click("assets/buttons/close_btn.png", confidence=0.8, min_search_time=get_secs(1)):
-            sleep(1)
+            sleep(0.5)
             continue
 
         # 6. Click random area to skip text if no buttons found
@@ -66,7 +66,7 @@ def handle_career_completion():
         info("No buttons found, clicking random area to skip text.")
         # Attempt to click "TAP" area again just in case
         device_action.click(target=(constants.SCREEN_BOTTOM_REGION[0] + 100, constants.SCREEN_BOTTOM_REGION[1] + 100))
-        sleep(1)
+        sleep(0.5)
         continue
 
     info("Career completion check finished (Loop Timeout/Selesai).")
@@ -205,7 +205,7 @@ def career_prep():
         device_action.locate_and_click("assets/buttons/restore_btn.png")
         sleep(1)
         
-        device_action.click(target=(764, 271))
+        device_action.click(target=(764, 161))
         sleep(0.5)
         
         # Max out TP usage? User code clicked plus_btn twice.
