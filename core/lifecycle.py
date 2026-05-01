@@ -110,11 +110,6 @@ def auto_start_career():
          device_action.locate_and_click("assets/buttons/resume_btn.png", min_search_time=get_secs(5))
          sleep(5)
          return True
-    elif device_action.locate("assets/buttons/resume_btn.png", min_search_time=get_secs(1)):
-        info("Tombol Resume ditemukan langsung.")
-        device_action.locate_and_click("assets/buttons/resume_btn.png")
-        sleep(5)
-        return True
     else:
         warning("Tidak menemukan indikator posisi yang dikenal. Mencoba masuk ke loop utama dan berharap bot bisa mengenali situasi.")
         return True
@@ -128,6 +123,10 @@ def auto_start_career():
             return
 
         if handle_connection_error():
+            continue
+
+        if device_action.locate_and_click("assets/buttons/confirm_btn.png", min_search_time=get_secs(1)):
+            sleep(1)
             continue
 
         if device_action.locate_and_click("assets/buttons/next_btn.png", min_search_time=get_secs(1)):
